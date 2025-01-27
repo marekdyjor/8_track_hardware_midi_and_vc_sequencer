@@ -1,8 +1,19 @@
+//**************************************************************************************************
+//**************************************************************************************************
+//*     8  track sequencer
+//*     
+//*
+//*
+//*
+//**************************************************************************************************
+//**************************************************************************************************
+
+
 //****************************  includes
 #include <Arduino.h>
-#include <FspTimer.h>
+#include <Midi functions.h>
+#include <Interrupts.h>
 //#include <MCP23017.h>
-//#include <MIDI.h>
 
 //****************************  debuging definitions 
 //#define MIDION
@@ -11,9 +22,6 @@
 //#define DEBUGTIMING
 long debugTimer1, debugTimer2, debugTimer3, debugTimer4;
 //#define DEBUGKEYBOARD
-
-//****************************  create timer object
-FspTimer seqPulse;
 
 //****************************  port definitions
 #define ROW1 2
@@ -38,84 +46,6 @@ long startTime          = 0;      // start delay time micro secounds
 #define KEY_RUN_STOP i == 1 and j == 1
 #define KEY_TEMPO_UP i == 1 and j == 0
 #define KEY_TEMPO_DOWN i == 0 and j == 1
-
-//****************************  Sequencer data
-struct seqTrackDesc {
-  int trackID     = 0;
-  byte seqLen     = 16;
-  byte noteLenght = 0;
-  int  noteTime   = 0;  // ms
-  String name     = "";
-  bool protectedTrack  = false;
-  bool savedToSDTrack  = false;
-};
-
-struct seqTrackPos {
-  int noteTime    = 0;  //  ms
-  byte note       = 0;
-  byte velocity   = 0;
-  byte chord      = 0;
-  byte modulation = 0;
-  int pitchBend   = 0;
-  byte CC1        = 0;
-  byte CC1Value   = 0;
-  byte CC2        = 0;
-  byte CC2Value   = 0;
-};
-
-struct TrackDesc {
-  byte Port       = 0;
-  byte chanell    = 0;
-  byte seqPos     = 0;
-  byte scale      = 0;
-  int transpoze   = 0;
-  byte transMIDIPort      = 0;
-  byte transMIDIChanell   = 0;
-  byte transMIDIBaseNote  = 0;  
-  seqTrackDesc trackDesc;
-  seqTrackPos sequence[32];
-};
-
-TrackDesc seqences[8];
-
-byte sequence[4][4][2] = {{{60,127},{72,64},{60,127},{72,64}},                    // depreciated
-                          {{0,0},{0,0},{0,0},{0,0}},
-                          {{5,127},{89,127},{12,127},{54,127}},
-                          {{0,0},{0,0},{0,0},{0,0}}};
-int seqLen = 4;
-int seqPos = 0;
-int noteLen = 8;
-volatile bool seqRun = false;
-volatile bool note_4on = false, note_4off = false,
-              note_2on = false, note_2off = false,
-              note1on = false, note1off = false, 
-              note2on = false, note2off = false, 
-              note4on = false, note4off = false, 
-              note8on = false, note8off = false,
-              note16on = false, note16off = false;
-float tempo = 30.0;
-int pulsePerSec = tempo /60 * 96; // 192
-volatile int pulseCounter = 0;
-
-volatile bool notes[9] = {false, false, false, false, false, false, false, false, false, };
-
-#define NOTE01_P 192
-#define NOTE02_P  96
-#define NOTE03_P  64
-#define NOTE04_P  48
-#define NOTE06_P  32
-#define NOTE08_P  24
-#define NOTE12_P  16
-#define NOTE16_P  12
-#define NOTE24_P   8
-
-//**************************************************************************************************
-//****************************  function Declarations
-//int myFunction(int, int);
-void timer_callback(timer_callback_args_t *p_args);
-bool beginTimer(float);
-void SendNoteOn(byte, byte, byte, byte);
-void SendNoteOff(byte, byte, byte, byte); 
 
 
 //**************************************************************************************************
@@ -157,8 +87,8 @@ void loop() {
       #ifdef MIDIDEBUG
         Serial.print(pulseCounter);
         Serial.print("  note on  ");
-        Serial.print(sequence[0][seqPos][0]);      
-        Serial.println(sequence[0][seqPos][1]);      
+        Serial.print(sequence[0][seqPos1][0]);      
+        Serial.println(sequence[0][seqPos1][1]);      
       #endif
       #ifdef MIDION
         for(int k=0; k<4; k++){
@@ -166,8 +96,8 @@ void loop() {
         }
       #endif      
       note4on = false;
-      seqPos++;
-      if(seqLen == seqPos){seqPos = 0;}
+      seqPos1++;
+      if(seqLen1 == seqPos1){seqPos1 = 0;}
     }
 
     if(note4off){
@@ -324,119 +254,4 @@ void loop() {
     Serial.print("                              time of key ");
     Serial.println(debugTimer3);
   #endif
-
 }
-
-//**************************************************************************************************
-//****************************  interrupt timer callbackMain
-void timer_callback(timer_callback_args_t __attribute((unused)) *p_args){
-    if(pulseCounter==0){
-      note_4on  = true;
-      note1on   = true;
-      note2on   = true;
-      note4on   = true;
-      note8on   = true;
-      note16on  = true;
-    }
-      
-    if(pulseCounter % 192 == 0 and pulseCounter % 384 == 0 ){
-      note_4on = true;
-    }
-    if(pulseCounter % 192 == 0 and pulseCounter % 384 != 0 ){
-      note_4off = true;
-    }
-       
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 == 0 ){
-      note1on = true;
-    }
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 != 0 ){
-      note1off = true;
-    }
-    
-    if(pulseCounter % 24 == 0 and pulseCounter % 48 == 0 ){
-      note2on = true;
-    }
-    if(pulseCounter % 24 == 0 and pulseCounter % 48 != 0 ){
-      note2off = true;
-    }
-
-    if(pulseCounter % 12 == 0 and pulseCounter % 24 == 0 ){
-      note4on = true;
-    }
-    if(pulseCounter % 12 == 0 and pulseCounter % 24 != 0 ){
-      note4off = true;
-    }
-
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 == 0 ){
-      note1on = true;
-    }
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 != 0 ){
-      note1off = true;
-    }
-
-    pulseCounter++;
-}
-
-//**************************************************************************************************
-//****************************  initialize Timer
-bool beginTimer(float rate) {
-  uint8_t timer_type = GPT_TIMER;
-  int8_t tindex;
-  tindex = FspTimer::get_available_timer(timer_type);
-  if (tindex < 0){
-    tindex = FspTimer::get_available_timer(timer_type, true);
-  }
-  if (tindex < 0){
-    return false;
-  }
-
-  FspTimer::force_use_of_pwm_reserved_timer();
-
-  if(!seqPulse.begin(TIMER_MODE_PERIODIC, timer_type, tindex, rate, 0.0f, timer_callback)){
-    return false;
-  }
-
-  if (!seqPulse.setup_overflow_irq()){
-    return false;
-  }
-
-  if (!seqPulse.open()){
-    return false;
-  }
-
-  if (!seqPulse.start()){
-    return false;
-  }
-  return true;
-}
-
-//**************************************************************************************************
-//****************************  SendNoteOn
-void SendNoteOn(byte port, byte channel, byte note, byte velocity)  {
-  if(port == 0){
-    Serial.write((0x90+channel));           // Note On channel 
-    Serial.write(byte(note));               // note value
-    Serial.write(byte(velocity));           // velocity
-  }
-  else{
-    Serial1.write((0x90+channel));           // Note On channel 1
-    Serial1.write(byte(note));               // note value
-    Serial1.write(byte(velocity));           // velocity
-  }
-}
-
-//**************************************************************************************************
-//****************************  SendNoteOff
-void SendNoteOff(byte port, byte channel, byte note, byte velocity) {
-  if(port == 0){
-    Serial.write(byte(0x80+channel));       // Note On channel 
-    Serial.write(byte(note));               // note value
-    Serial.write(byte(velocity));           // velocity
-  }
-  else{
-    Serial1.write((0x80+channel));           // Note On channel 1
-    Serial1.write(byte(note));               // note value
-    Serial1.write(byte(velocity));           // velocity
-  }
-}
-
