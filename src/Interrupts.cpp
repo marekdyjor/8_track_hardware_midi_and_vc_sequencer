@@ -10,9 +10,10 @@
 
 //****************************  includes
 #include <Arduino.h>
-#include <FspTimer.h>
 #include <Interrupts.h>
 
+//****************************  create timer object
+ FspTimer seqPulse;
 
 //**************************************************************************************************
 //****************************  interrupt timer callbackMain

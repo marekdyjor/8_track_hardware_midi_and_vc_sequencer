@@ -11,31 +11,88 @@
 //****************************  includes
 #include <Arduino.h>
 
-//****************************  Sequencer data
-struct seqTrackDesc {
+/*
+//****************************  Sequencer track descryption 
+//****************************  information about track
+class SeqTrackDesc {
+
+  //****************************  attributes
+  private:
   int trackID     = 0;
   byte seqLen     = 16;
   byte noteLenght = 0;
-  int  noteTime   = 0;  // ms
+  int  noteTime   = 0;  // pulses
+  byte CC1        = 0;
+  byte CC2        = 0;
   String name     = "";
-  bool protectedTrack  = false;
-  bool savedToSDTrack  = false;
+  bool protectedTrack ;
+  bool savedToSDTrack ;
+  //vector(SeqTrackPos) sequence;
+
+  //****************************  metods
+  public:
+  void setTrackID(int id){trackID = id;}
+  void setSeqLen(byte len){seqLen = len;}
+  void setNoteLenght(byte len){noteLenght = len;}
+  void setNoteTime(int time){noteTime = time;}
+  void setCC1(byte cc){CC1 = cc;}
+  void setCC2(byte cc){CC2 = cc;}
+  void setName(String nm){name = nm;}
+  void setProtectedTrack(bool prot){protectedTrack = prot;}
+  void setSavedToSDTrack(bool saved){savedToSDTrack = saved;}
+  int getTrackID(){return trackID;}
+  byte getSeqLen(){return seqLen;}
+  byte getNoteLenght(){return noteLenght;}
+  int getNoteTime(){return noteTime;}
+  byte getCC1(){return CC1;}
+  byte getCC2(){return CC2;}
+  String getName(){return name;}
+  bool getProtectedTrack(){return protectedTrack;}
+  bool getSavedToSDTrack(){return savedToSDTrack;}
 };
 
-struct seqTrackPos {
-  int noteTime    = 0;  //  ms
+//****************************  Sequencer track position
+//**************************** 
+class SeqTrackPos {
+  
+  //****************************  attributes
+  private:
+  int noteTime    = 0;  //  pulses
   byte note       = 0;
   byte velocity   = 0;
   byte chord      = 0;
   byte modulation = 0;
   int pitchBend   = 0;
-  byte CC1        = 0;
   byte CC1Value   = 0;
-  byte CC2        = 0;
   byte CC2Value   = 0;
+  
+  //****************************  metods
+  public:
+  void setNoteTime(int time){noteTime = time;}
+  void setNote(byte note){note = note;}
+  void setVelocity(byte vel){velocity = vel;}
+  void setChord(byte ch){chord = ch;}
+  void setModulation(byte mod){modulation = mod;}
+  void setPitchBend(int bend){pitchBend = bend;}
+  void setCC1Value(byte val){CC1Value = val;}
+  void setCC2Value(byte val){CC2Value = val;}
+  int getNoteTime(){return noteTime;}
+  byte getNote(){return note;}
+  byte getVelocity(){return velocity;}
+  byte getChord(){return chord;}
+  byte getModulation(){return modulation;}
+  int getPitchBend(){return pitchBend;}
+  byte getCC1Value(){return CC1Value;}
+  byte getCC2Value(){return CC2Value;}
+  void sendMIDIpacket(byte port, byte channel);
 };
 
-struct TrackDesc {
+//****************************  Sequencer track
+//****************************
+class Track {
+  
+  //****************************  attributes
+  private:
   byte Port       = 0;
   byte chanell    = 0;
   byte seqPos     = 0;
@@ -44,32 +101,67 @@ struct TrackDesc {
   byte transMIDIPort      = 0;
   byte transMIDIChanell   = 0;
   byte transMIDIBaseNote  = 0;  
-  seqTrackDesc trackDesc;
-  seqTrackPos sequence[32];
-};
+  SeqTrackDesc track;
+  
+  //****************************  metods
+  public:
+  void setPort(byte port){Port = port;}
+  void setChanell(byte ch){chanell = ch;}
+  void setSeqPos(byte pos){seqPos = pos;}
+  void setScale(byte sc){scale = sc;}
+  void setTranspoze(int tr){transpoze = tr;}
+  void setTransMIDIPort(byte port){transMIDIPort = port;}
+  void setTransMIDIChanell(byte ch){transMIDIChanell = ch;}
+  void setTransMIDIBaseNote(byte note){transMIDIBaseNote = note;}
+  void setTrack(SeqTrackDesc tr){track = tr;}
+  byte getPort(){return Port;}
+  byte getChanell(){return chanell;}
+  byte getSeqPos(){return seqPos;}
+  byte getScale(){return scale;}
+  int getTranspoze(){return transpoze;}
+  byte getTransMIDIPort(){return transMIDIPort;}
+  byte getTransMIDIChanell(){return transMIDIChanell;}
+  byte getTransMIDIBaseNote(){return transMIDIBaseNote;}
+  SeqTrackDesc getTrack(){return track;}
+  bool ReadTrackFromSD(int trackID);
+  bool SaveTrackToSD(int trackID);  
 
-TrackDesc seqences[8];
+  };
 
-byte sequence[4][4][2] = {{{60,127},{72,64},{60,127},{72,64}},                    // depreciated
-                          {{0,0},{0,0},{0,0},{0,0}},
-                          {{5,127},{89,127},{12,127},{54,127}},
-                          {{0,0},{0,0},{0,0},{0,0}}};
-int seqLen1 = 4;
-int seqPos1 = 0;
-int noteLen1 = 8;
-volatile bool seqRun = false;
-volatile bool note_4on = false, note_4off = false,
-              note_2on = false, note_2off = false,
-              note1on = false, note1off = false, 
-              note2on = false, note2off = false, 
-              note4on = false, note4off = false, 
-              note8on = false, note8off = false,
-              note16on = false, note16off = false;
-float tempo = 30.0;
-int pulsePerSec = tempo /60 * 96; // 192
-volatile int pulseCounter = 0;
+//****************************  tracks
+//****************************
+class Tracks {
+  
+  //****************************  attributes
+  private:
+  Track tracks[8];
+  
+  //****************************  metods
+  public:
+  void setTrack(int id, Track tr){tracks[id] = tr;}
+  Track getTrack(int id){return tracks[id];}
+  bool ReadTracksFromSD();
+  bool SaveTracksToSD();
+}*/
 
-volatile bool notes[9] = {false, false, false, false, false, false, false, false, false, };
+
+extern byte sequence[4][4][2];
+extern int seqLen1;
+extern int seqPos1;
+extern int noteLen1;
+extern volatile bool seqRun;
+extern volatile bool note_4on, note_4off,
+            note_2on, note_2off,
+            note1on, note1off, 
+            note2on, note2off, 
+            note4on, note4off, 
+            note8on, note8off,
+            note16on, note16off;
+extern float tempo;
+extern int pulsePerSec;
+extern volatile int pulseCounter;
+
+extern volatile bool notes[9];
 
 #define NOTE01_P 192
 #define NOTE02_P  96

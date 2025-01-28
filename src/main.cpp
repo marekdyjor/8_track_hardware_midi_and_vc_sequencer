@@ -16,8 +16,8 @@
 //#include <MCP23017.h>
 
 //****************************  debuging definitions 
-//#define MIDION
-#define MIDIDEBUG
+#define MIDION
+//#define MIDIDEBUG
 //#define CONTROLLDEBUG
 //#define DEBUGTIMING
 long debugTimer1, debugTimer2, debugTimer3, debugTimer4;
@@ -92,7 +92,7 @@ void loop() {
       #endif
       #ifdef MIDION
         for(int k=0; k<4; k++){
-          SendNoteOn(0, k, sequence[k][seqPos][0], sequence[k][seqPos][1]);
+          SendNoteOn(0, k, sequence[k][seqPos1][0], sequence[k][seqPos1][1]);
         }
       #endif      
       note4on = false;
@@ -108,7 +108,7 @@ void loop() {
       #endif
       #ifdef MIDION
         for(int k=0; k<4; k++){
-          SendNoteOff(0, k, sequence[k][seqPos][0], 0x00);
+          SendNoteOff(0, k, sequence[k][seqPos1][0], 0x00);
         }      
       #endif
       note4off = false;

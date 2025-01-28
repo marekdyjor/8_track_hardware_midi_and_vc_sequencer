@@ -15,3 +15,7 @@
 //****************************  function Declarations
 void SendNoteOn(byte, byte, byte, byte);
 void SendNoteOff(byte, byte, byte, byte); 
+void SendAftertouche(byte, byte, byte, byte);
+void SendControlChange(byte, byte, byte, byte);
+void SendProgramChange(byte, byte, byte, byte);
+void SendPitchBend(byte, byte, word);

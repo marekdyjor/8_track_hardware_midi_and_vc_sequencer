@@ -13,8 +13,7 @@
 #include <FspTimer.h>
 #include <Sequencer.h>
 
-//****************************  create timer object
-FspTimer seqPulse;
+extern FspTimer seqPulse;
 
 
 //**************************************************************************************************
