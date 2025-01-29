@@ -13,33 +13,23 @@
 #include <Arduino.h>
 #include <Midi functions.h>
 #include <Interrupts.h>
-//#include <MCP23017.h>
+#include <MCP23017.h>
 
 //****************************  debuging definitions 
 #define MIDION
-//#define MIDIDEBUG
-//#define CONTROLLDEBUG
-//#define DEBUGTIMING
+#define MIDIDEBUG
+#define CONTROLLDEBUG
+#define DEBUGTIMING
 long debugTimer1, debugTimer2, debugTimer3, debugTimer4;
-//#define DEBUGKEYBOARD
-
-//****************************  port definitions
-#define ROW1 2
-#define ROW2 3
-
-#define KEYCOL1 6
-#define KEYCOL2 7
-
-#define LEDCOL1 4
-#define LEDCOL2 5
+#define DEBUGKEYBOARD
 
 //****************************  keyboard and LED
 bool leds[2][2] = {{false, false},{false, false}};    // rows   columns
 int  keys[2][2] = {{0, 0},{0, 0}};                    // rows   columns
 
-long  startScanTime     = 0,
-      startLEDScanTime  = 0;      //start scan time counter millisecounds
-long startTime          = 0;      // start delay time micro secounds
+long  keyScanTime       = 0,
+      ledScanTime       = 0,      //start scan time counter millisecounds
+      ledDelayTimer     = 0;      // start delay time micro secounds
 
 #define LED_RUN_STOP 1][0
 #define LED_MEASUREPULSE 0][0
@@ -47,6 +37,17 @@ long startTime          = 0;      // start delay time micro secounds
 #define KEY_TEMPO_UP i == 1 and j == 0
 #define KEY_TEMPO_DOWN i == 0 and j == 1
 
+#define ROW1 2
+#define ROW2 3
+#define KEYCOL1 6
+#define KEYCOL2 7
+#define LEDCOL1 4
+#define LEDCOL2 5
+
+//****************************  encoder
+long  encoderScanTime   = 0;
+const byte encSeqPins[8][2] = {{0, 1},{2, 3},{4, 5},{6, 7},{8, 9},{10, 11},{12, 13},{14, 15}};
+const byte encTmpPins[2]    = {1, 2};
 
 //**************************************************************************************************
 //****************************  Setup
@@ -73,6 +74,7 @@ void setup() {
   //interrupts();  
 }
 
+
 //**************************************************************************************************
 //****************************  Main Loop  :)
 void loop() {
@@ -82,58 +84,75 @@ void loop() {
     debugTimer1 = micros();
   #endif
   if(seqRun){
-    if(note4on){
+    if(note4on and note4off){
       // Send a "Note On" message
       #ifdef MIDIDEBUG
         Serial.print(pulseCounter);
         Serial.print("  note on  ");
-        Serial.print(sequence[0][seqPos1][0]);      
-        Serial.println(sequence[0][seqPos1][1]);      
+        Serial.print(sequence[0][seqPos][0]);      
+        Serial.print(" velocity ");
+        Serial.print(sequence[0][seqPos][1]);      
+        Serial.print(" time ");
+        Serial.println(sequence[0][seqPos][2]);      
       #endif
       #ifdef MIDION
-        for(int k=0; k<4; k++){
-          SendNoteOn(0, k, sequence[k][seqPos1][0], sequence[k][seqPos1][1]);
+        for(int k=0; k<seqTracks; k++){
+          SendNoteOn(0, k, sequence[k][seqPos][0], sequence[k][seqPos][1]);
+          noteLen=sequence[k][seqPos][2];
         }
       #endif      
-      note4on = false;
-      seqPos1++;
-      if(seqLen1 == seqPos1){seqPos1 = 0;}
+      note4off = true;
+      seqPos++;
+      if(seqLen == seqPos){seqPos = 0;}
     }
-
-    if(note4off){
-      // Send a "Note Off" message
+    
+    if(not note4on and note4off){
       #ifdef MIDIDEBUG
         Serial.print(pulseCounter);
         Serial.println("  note off");
       #endif
       #ifdef MIDION
         for(int k=0; k<4; k++){
-          SendNoteOff(0, k, sequence[k][seqPos1][0], 0x00);
+          SendNoteOff(0, k, sequence[k][seqPos][0], 0x00);
         }      
       #endif
       note4off = false;
     }    
 
-    if(note_4on){
+    if(note1on){
       leds[LED_MEASUREPULSE] = true;
-      note_4on = false;
+      note1on = false;
     }
-    if(note_4off){
+    if(note1off){
       leds[LED_MEASUREPULSE] = false;
-      note_4off = false;
+      note1off = false;
     }    
   }
   #ifdef DEBUGTIMING
     debugTimer1-= micros();
     Serial.print("                              time of seq ");
-    Serial.println(debugTimer1);
+    Serial.println(-debugTimer1);
+  #endif
+
+//**************************** scan ENCODERs
+  #ifdef DEBUGTIMING
+    debugTimer4= micros();
+  #endif
+  if(millis() - encoderScanTime >= 1){
+
+
+  }
+  #ifdef DEBUGTIMING
+    debugTimer4-= micros();
+    Serial.print("                              time of encoder ");
+    Serial.println(-debugTimer4);
   #endif
 
 //**************************** scan LEDs
   #ifdef DEBUGTIMING
     debugTimer2= micros();
   #endif
-  //if(micros() - startLEDScanTime > 10){
+  //if(micros() - ledScanTime > 10){
     for(int i=0; i<2; i++)  {   //led columns
       
       digitalWrite(LEDCOL1+i,HIGH);
@@ -141,21 +160,21 @@ void loop() {
         
         if(leds[j][i]){
           digitalWrite(ROW1+j,LOW);   
-          startTime = micros();
-          while (micros() - startTime < 1) {}   //delay  1us
+          ledDelayTimer = micros();
+          while (micros() - ledDelayTimer < 1) {}   //delay  1us
         }
         digitalWrite(ROW1+j,HIGH);   
-        startTime = micros();
-        while (micros() - startTime < 2) {}     //delay  2us
+        ledDelayTimer = micros();
+        while (micros() - ledDelayTimer < 2) {}     //delay  2us
       }
       digitalWrite(LEDCOL1+i,LOW);
     }
-  //  startLEDScanTime = micros();
+  //  ledScanTime = micros();
   //}
   #ifdef DEBUGTIMING
     debugTimer2-= micros();
     Serial.print("                              time of led ");
-    Serial.println(debugTimer2);
+    Serial.println(-debugTimer2);
   #endif
 
 //**************************** scan Keys
@@ -163,7 +182,7 @@ void loop() {
     debugTimer3 = micros();
   #endif
   
-  if(millis() - startScanTime > 10){
+  if(millis() - keyScanTime > 10){
     for(int i=0; i<2; i++)  {   //key rows
       digitalWrite(ROW1+i,LOW);    
       for(int j=0; j<2; j++)  {                 // key columns
@@ -247,11 +266,11 @@ void loop() {
       }
       digitalWrite(ROW1+i,HIGH);
     }
-    startScanTime = millis();
+    keyScanTime = millis();
   }
   #ifdef DEBUGTIMING
     debugTimer3-= micros();
     Serial.print("                              time of key ");
-    Serial.println(debugTimer3);
+    Serial.println(-debugTimer3);
   #endif
 }

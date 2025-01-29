@@ -19,29 +19,26 @@
 //****************************  interrupt timer callbackMain
 void timer_callback(timer_callback_args_t __attribute((unused)) *p_args){
     if(pulseCounter==0){
-      note_4on  = true;
       note1on   = true;
       note2on   = true;
       note4on   = true;
       note8on   = true;
       note16on  = true;
     }
-      
-    if(pulseCounter % 192 == 0 and pulseCounter % 384 == 0 ){
-      note_4on = true;
-    }
-    if(pulseCounter % 192 == 0 and pulseCounter % 384 != 0 ){
-      note_4off = true;
-    }
-       
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 == 0 ){
+    
+          
+    if(pulseCounter % NOTE01_P == 0){
       note1on = true;
     }
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 != 0 ){
-      note1off = true;
+    if(note1on and pulseCounter % (NOTE01_P/8) == 0){
+      noteLen--;
+      if(noteLen >=0){
+        note1off = true;
+        note1on = false;
+      } 
     }
     
-    if(pulseCounter % 24 == 0 and pulseCounter % 48 == 0 ){
+    /*if(pulseCounter % 24 == 0 and pulseCounter % 48 == 0 ){
       note2on = true;
     }
     if(pulseCounter % 24 == 0 and pulseCounter % 48 != 0 ){
@@ -53,14 +50,7 @@ void timer_callback(timer_callback_args_t __attribute((unused)) *p_args){
     }
     if(pulseCounter % 12 == 0 and pulseCounter % 24 != 0 ){
       note4off = true;
-    }
-
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 == 0 ){
-      note1on = true;
-    }
-    if(pulseCounter % 48 == 0 and pulseCounter % 96 != 0 ){
-      note1off = true;
-    }
+    }*/
 
     pulseCounter++;
 }

@@ -10,6 +10,7 @@
 
 //****************************  includes
 #include <Arduino.h>
+#include <ArxContainer.h>
 
 /*
 //****************************  Sequencer track descryption 
@@ -27,7 +28,7 @@ class SeqTrackDesc {
   String name     = "";
   bool protectedTrack ;
   bool savedToSDTrack ;
-  //vector(SeqTrackPos) sequence;
+  vector(SeqTrackPos) sequence;
 
   //****************************  metods
   public:
@@ -145,18 +146,20 @@ class Tracks {
 }*/
 
 
-extern byte sequence[4][4][2];
-extern int seqLen1;
-extern int seqPos1;
-extern int noteLen1;
+extern byte sequence[4][8][3];
+extern int seqLen;
+extern int seqTracks;
+extern int seqPos;
+extern volatile int noteLen;
 extern volatile bool seqRun;
-extern volatile bool note_4on, note_4off,
-            note_2on, note_2off,
-            note1on, note1off, 
-            note2on, note2off, 
-            note4on, note4off, 
-            note8on, note8off,
-            note16on, note16off;
+extern volatile bool note1on, note1off, 
+                     note2on, note2off, 
+                     note3on, note3off, 
+                     note4on, note4off, 
+                     note6on, note6off, 
+                     note8on, note8off,
+                     note12on, note12off,
+                     note16on, note16off;
 extern float tempo;
 extern int pulsePerSec;
 extern volatile int pulseCounter;
