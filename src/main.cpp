@@ -118,15 +118,6 @@ void loop() {
       #endif
       note4off = false;
     }    
-
-    if(note1on){
-      leds[LED_MEASUREPULSE] = true;
-      note1on = false;
-    }
-    if(note1off){
-      leds[LED_MEASUREPULSE] = false;
-      note1off = false;
-    }    
   }
   #ifdef DEBUGTIMING
     debugTimer1-= micros();
