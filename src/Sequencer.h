@@ -175,3 +175,6 @@ extern volatile bool notes[9];
 #define NOTE12_P  16
 #define NOTE16_P  12
 #define NOTE24_P   8
+
+//****************************  declare functions
+extern void seqHandler();
