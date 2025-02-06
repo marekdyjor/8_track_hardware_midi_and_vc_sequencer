@@ -10,6 +10,7 @@
 
 //****************************  includes
 #include <Arduino.h>
+#include <ArxContainer.h>
 #include <Sequencer.h> 
 
 byte sequence[4][8][3] = {{{60,127,3},{72,64,3},{60,127,7},{72,64,0},{5,127,7},{89,127,3},{12,127,3},{54,127,3}},                    // depreciated
@@ -34,3 +35,43 @@ int pulsePerSec = tempo /60 * NOTE01_P;
 volatile int pulseCounter = 0;
 
 volatile bool notes[9] = {false, false, false, false, false, false, false, false, false, };
+
+//****************************  declare functions
+void seqHandler() {
+    if(seqRun){
+    if(note4on and note4off){
+      // Send a "Note On" message
+      #ifdef MIDIDEBUG
+        Serial.print(pulseCounter);
+        Serial.print("  note on  ");
+        Serial.print(sequence[0][seqPos][0]);      
+        Serial.print(" velocity ");
+        Serial.print(sequence[0][seqPos][1]);      
+        Serial.print(" time ");
+        Serial.println(sequence[0][seqPos][2]);      
+      #endif
+      #ifdef MIDION
+        for(int k=0; k<seqTracks; k++){
+          SendNoteOn(0, k, sequence[k][seqPos][0], sequence[k][seqPos][1]);
+          noteLen=sequence[k][seqPos][2];
+        }
+      #endif      
+      note4off = true;
+      seqPos++;
+      if(seqLen == seqPos){seqPos = 0;}
+    }
+    
+    if(not note4on and note4off){
+      #ifdef MIDIDEBUG
+        Serial.print(pulseCounter);
+        Serial.println("  note off");
+      #endif
+      #ifdef MIDION
+        for(int k=0; k<4; k++){
+          SendNoteOff(0, k, sequence[k][seqPos][0], 0x00);
+        }      
+      #endif
+      note4off = false;
+    }    
+  }
+}
