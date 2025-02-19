@@ -15,9 +15,6 @@
 #include <LEDs.h>
 
 //****************************  declarations
-byte keyledRows[8][2]   = {{3, 0},{3, 1},{3, 2},{3, 3},{3, 4},{3, 5},{3, 6},{3, 7}};  
-byte keyCols[8][2]      = {{4, 0},{4, 1},{4, 2},{4, 3},{4, 4},{4, 5},{4, 6},{4, 7}};  // rows   columns
-                    // {port, pin}  port - 0:UNO  1:PORT0A, 2:PORT0B  3:PORT1A, 4:PORT1B  pin - 0-7
 byte keys[8][8][2]        ={{{0,0},{0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{0,7}},     // rows   columns  {time, number}
                             {{0,8},{0,9},{0,10},{0,11},{0,12},{0,13},{0,14},{0,15}},
                             {{0,16},{0,17},{0,18},{0,19},{0,20},{0,21},{0,22},{0,23}},
@@ -53,7 +50,7 @@ void keyboard() {
                 if (KEY_RUN_STOP){                           // RUN / STOP toggle
                 //keys[i][j] = 5;
                 seqRun = not seqRun;
-                leds[LED_RUN_STOP] = seqRun;
+                setLed(LED_TEMPO, seqRun ? 2 : 0);
                 #ifdef CONTROLLDEBUG            
                     Serial.println(seqRun ? "RUN" : "STOP");  
                 #endif            

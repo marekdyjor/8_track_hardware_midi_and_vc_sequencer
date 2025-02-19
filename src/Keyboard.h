@@ -48,8 +48,6 @@
 
 
 //****************************  declarations
-extern byte keyledRows[8][2];
-extern byte keyCols[8][2];
 extern byte keys[8][8][2];   
 
 extern byte  keysDepr[2][2];                    // rows   columns

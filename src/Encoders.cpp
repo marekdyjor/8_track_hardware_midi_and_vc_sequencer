@@ -23,6 +23,12 @@ int lastClkState[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 int clkState[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 int dtState[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+byte keyledRows[8][2]   = {{3, 0},{3, 1},{3, 2},{3, 3},{3, 4},{3, 5},{3, 6},{3, 7}};  
+byte keyCols[8][2]      = {{4, 0},{4, 1},{4, 2},{4, 3},{4, 4},{4, 5},{4, 6},{4, 7}};  // rows   columns
+                    // {port, pin}  port - 0:UNO  1:PORT0A, 2:PORT0B  3:PORT1A, 4:PORT1B  pin - 0-7
+byte ledCols[3][2]      = {{4, 0},{4, 1},{4, 2}};  // columns
+                    // {port, pin}  port - 0:UNO  1:PORT0A, 2:PORT0B  3:PORT1A, 4:PORT1B  pin - 0-7
+                    
 //****************************  function definition
 
 //****************************  initialize encoders
